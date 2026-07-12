@@ -47,20 +47,30 @@ def write_excel_report(
     )
 
     with pd.ExcelWriter(report_path, engine="openpyxl") as writer:
-        overview.to_excel(writer, "Genel_Ozet", index=False)
-        raw_transactions.to_excel(writer, "PDF_Ham_Islemler", index=False)
-        tables["analysis_data"].to_excel(writer, "Analiz_Verisi", index=False)
-        tables["transaction_type_summary"].to_excel(writer, "Islem_Tipi_Ozeti", index=False)
-        tables["category_summary"].to_excel(writer, "Kategori_Ozeti", index=False)
-        tables["monthly_summary"].to_excel(writer, "Aylik_Ozet", index=False)
-        tables["latest_month_category_summary"].to_excel(writer, "Son_Ay_Kategori", index=False)
-        budget_summary.to_excel(writer, "Butce_Takibi", index=False)
-        recurring.to_excel(writer, "Duzenli_Odemeler", index=False)
-        anomalies.to_excel(writer, "Anomaliler", index=False)
-        findings.to_excel(writer, "Harcama_Tespitleri", index=False)
-        top_transactions.to_excel(writer, "En_Yuksek_15_Islem", index=False)
+        overview.to_excel(writer, sheet_name="Genel_Ozet", index=False)
+        raw_transactions.to_excel(writer, sheet_name="PDF_Ham_Islemler", index=False)
+        tables["analysis_data"].to_excel(writer, sheet_name="Analiz_Verisi", index=False)
+        tables["transaction_type_summary"].to_excel(
+            writer, sheet_name="Islem_Tipi_Ozeti", index=False
+        )
+        tables["category_summary"].to_excel(
+            writer, sheet_name="Kategori_Ozeti", index=False
+        )
+        tables["monthly_summary"].to_excel(
+            writer, sheet_name="Aylik_Ozet", index=False
+        )
+        tables["latest_month_category_summary"].to_excel(
+            writer, sheet_name="Son_Ay_Kategori", index=False
+        )
+        budget_summary.to_excel(writer, sheet_name="Butce_Takibi", index=False)
+        recurring.to_excel(writer, sheet_name="Duzenli_Odemeler", index=False)
+        anomalies.to_excel(writer, sheet_name="Anomaliler", index=False)
+        findings.to_excel(writer, sheet_name="Harcama_Tespitleri", index=False)
+        top_transactions.to_excel(
+            writer, sheet_name="En_Yuksek_15_Islem", index=False
+        )
         pd.DataFrame({"Finans_Yorumu": commentary.splitlines()}).to_excel(
-            writer, "Finans_Yorumu", index=False
+            writer, sheet_name="Finans_Yorumu", index=False
         )
 
     add_excel_dashboard(
@@ -113,7 +123,10 @@ def add_excel_dashboard(
         ("Ortalama İşlem", float(latest_data["Tutar"].mean())),
         ("Finansal Sağlık Puanı", health_score),
         ("Tasarruf Potansiyeli", savings_potential),
-        ("Önceki Aya Göre Değişim %", previous_change if previous_change is not None else "Veri yok"),
+        (
+            "Önceki Aya Göre Değişim %",
+            previous_change if previous_change is not None else "Veri yok",
+        ),
         ("Tespit Sayısı", len(findings)),
     ]
     for row_index, (label, value) in enumerate(metrics, start=3):
@@ -136,8 +149,11 @@ def add_excel_dashboard(
     for offset, row in latest.reset_index(drop=True).iterrows():
         excel_row = category_start + 1 + offset
         values = [
-            row["Kategori"], row["Toplam_Harcama"], row["Islem_Sayisi"],
-            row["Ortalama_Harcama"], row["Harcama_Orani_%"],
+            row["Kategori"],
+            row["Toplam_Harcama"],
+            row["Islem_Sayisi"],
+            row["Ortalama_Harcama"],
+            row["Harcama_Orani_%"],
         ]
         for column, value in enumerate(values, start=1):
             sheet.cell(excel_row, column, value).border = border
@@ -178,7 +194,12 @@ def add_excel_dashboard(
         cell.fill, cell.font, cell.border = orange, Font(bold=True), border
     for offset, row in monthly.reset_index(drop=True).iterrows():
         excel_row = monthly_start + 1 + offset
-        values = [row["Ay"], row["Toplam_Harcama"], row["Islem_Sayisi"], row["Ortalama_Islem_Tutari"]]
+        values = [
+            row["Ay"],
+            row["Toplam_Harcama"],
+            row["Islem_Sayisi"],
+            row["Ortalama_Islem_Tutari"],
+        ]
         for column, value in enumerate(values, start=1):
             sheet.cell(excel_row, column, value).border = border
     monthly_last = monthly_start + len(monthly)
@@ -197,21 +218,39 @@ def add_excel_dashboard(
 
     budget_start = monthly_last + 4
     for column, header in enumerate(
-        ["Kategori", "Bütçe", "Harcama", "Kalan", "Kullanım %", "Durum"], start=1
+        ["Kategori", "Bütçe", "Harcama", "Kalan", "Kullanım %", "Durum"],
+        start=1,
     ):
         cell = sheet.cell(budget_start, column, header)
         cell.fill, cell.font, cell.border = red, Font(bold=True), border
     for offset, row in budget_summary.reset_index(drop=True).iterrows():
         excel_row = budget_start + 1 + offset
-        values = [row["Kategori"], row["Butce"], row["Harcama"], row["Kalan"], row["Kullanim_%"], row["Durum"]]
+        values = [
+            row["Kategori"],
+            row["Butce"],
+            row["Harcama"],
+            row["Kalan"],
+            row["Kullanim_%"],
+            row["Durum"],
+        ]
         for column, value in enumerate(values, start=1):
             cell = sheet.cell(excel_row, column, value)
             cell.border = border
             cell.alignment = Alignment(wrap_text=True)
 
     for column, width in {
-        "A": 31, "B": 22, "C": 25, "D": 21, "E": 18, "F": 18,
-        "G": 22, "H": 22, "I": 22, "J": 22, "K": 22, "L": 22,
+        "A": 31,
+        "B": 22,
+        "C": 25,
+        "D": 21,
+        "E": 18,
+        "F": 18,
+        "G": 22,
+        "H": 22,
+        "I": 22,
+        "J": 22,
+        "K": 22,
+        "L": 22,
     }.items():
         sheet.column_dimensions[column].width = width
     sheet.freeze_panes = "A13"
